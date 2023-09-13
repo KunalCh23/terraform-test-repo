@@ -1,0 +1,40 @@
+name: Mirror to AWS CodeCommit
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch as needed
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Mirror to AWS CodeCommit
+      run: |
+        # Replace with your AWS CodeCommit repository URL
+        CODECOMMIT_REPO_URL=${{ secrets.CODECOMMIT_REPO_URL }}
+        
+        # Replace with your AWS CodeCommit HTTPS Git credentials
+        GIT_CREDENTIALS_USERNAME=${{ secrets.GIT_CREDENTIALS_USERNAME }}
+        GIT_CREDENTIALS_PASSWORD=${{ secrets.GIT_CREDENTIALS_PASSWORD }}
+        
+        # Clone the GitHub repository
+        git clone --mirror $GITHUB_REPOSITORY .git
+        
+        # Set up Git credentials for AWS CodeCommit
+        git config credential.helper '!aws codecommit credential-helper $@'
+        git config credential.UseHttpPath true
+        
+        # Push to AWS CodeCommit
+        git push $CODECOMMIT_REPO_URL --mirror
+        
+        # Clean up
+        rm -rf .git
+
+      env:
+        GIT_CREDENTIALS_USERNAME: ${{ secrets.GIT_CREDENTIALS_USERNAME }}
+        GIT_CREDENTIALS_PASSWORD: ${{ secrets.GIT_CREDENTIALS_PASSWORD }}
