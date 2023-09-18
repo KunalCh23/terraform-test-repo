@@ -5,39 +5,17 @@ on:
     branches:
       - main  # Adjust the branch as needed
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  mirror:
-    runs-on: ubuntu-latest
-
+  # This workflow contains a single job called "mirroring"
+  mirroring:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Mirror to AWS CodeCommit
-      run: |
-        # Replace with your AWS CodeCommit repository URL
-        CODECOMMIT_REPO_URL=${{ secrets.CODECOMMIT_REPO_URL }}
-        
-        # Replace with your AWS CodeCommit HTTPS Git credentials
-        GIT_CREDENTIALS_USERNAME=${{ secrets.GIT_CREDENTIALS_USERNAME }}
-        GIT_CREDENTIALS_PASSWORD=${{ secrets.GIT_CREDENTIALS_PASSWORD }}
-        
-        # Verify CodeCommit repository existence
-        aws codecommit get-repository --repository-name test-1
-        
-        # Clone the GitHub repository
-        git clone --mirror $GITHUB_REPOSITORY .git
-        
-        # Set up Git credentials for AWS CodeCommit
-        git config credential.helper '!aws codecommit credential-helper $@'
-        git config credential.UseHttpPath true
-        
-        # Push to AWS CodeCommit
-        git push $CODECOMMIT_REPO_URL --mirror
-        
-        # Clean up
-        rm -rf .git
-
-      env:
-        GIT_CREDENTIALS_USERNAME: ${{ secrets.GIT_CREDENTIALS_USERNAME }}
-        GIT_CREDENTIALS_PASSWORD: ${{ secrets.GIT_CREDENTIALS_PASSWORD }}
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v1
+    - uses: pixta-dev/repository-mirroring-action@v1
+      with:
+        target_repo_url: ${{ SSH_CLONE_URL }}
+        ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh_username: ${{ secrets.SSH_PUBLIC_KEY_ID }}
