@@ -1,4 +1,3 @@
-provider "aws" {
-  # Configuration options
-  region = "${var.region}"
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
 }
